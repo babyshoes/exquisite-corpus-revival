@@ -1,8 +1,20 @@
 version: '3'
 services:
-  exquisite:
+  backend:
     build: ./app
+    depends_on:
+      - db
     ports:
     - "5000:5000"
     volumes:
     - ./app:/home/app
+    env_file:
+    - db-variables.env
+  # web:
+  #   build: ./web
+  #   volumes:
+  #   - ./web:/home/web
+  db:
+    image: postgres
+    env_file:
+    - db-variables.env

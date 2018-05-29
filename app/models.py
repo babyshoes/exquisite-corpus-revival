@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 
+db = SQLAlchemy()
+
 corpuses = db.Table('corpuses',
     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
     db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True)
@@ -22,8 +24,8 @@ class Round(db.Model):
     number = db.Column(db.Integer)
     current = db.Column(db.Boolean, default=True)
     length = db.Column(db.Integer) # if corpus is timed, then length is prescriptive
-    first_line = db.relationship('Line', backref='round', lazy=True, nullable=True) #maybe alias as exposed_line for number > 0
-    second_line = db.relationship('Line', backref='round', lazy=True, nullable=True)
+    first_line = db.relationship('Line', backref='round', lazy=True) #maybe alias as exposed_line for number > 0
+    second_line = db.relationship('Line', backref='round', lazy=True)
     start_time = db.Column(db.DateTime, nullable=False)
     completed_time = db.Column(db.DateTime, nullable=True)
 
@@ -34,7 +36,7 @@ class Line(db.Model):
     
 class Poem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    rounds = db.relationship('Round', backref='poem', nullable=True)
+    rounds = db.relationship('Round', backref='poem')
     # current_round = db.relationship('CurrentRound', backref='poem', lazy=True)
     timed = db.Column(db.Boolean, unique=False, default=False)
 

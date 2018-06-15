@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import re
 
 db = SQLAlchemy()
 
@@ -18,18 +20,17 @@ class Poet(db.Model):
         backref=db.backref('poets', lazy=True))
     lines = db.relationship('Line', backref='poet', lazy=True)
 
-    def __init__(self, name):
+    def __init__(self, name, username, email, password):
+        # import pdb;pdb.set_trace()
         self.name = name
         self.username = username
         self.email = email
+        self.set_password(password)
     
     def save(self):
         db.session.add(self)
         db.session.commit()
     
-    def write_lines(self):
-
-
     def set_password(self, password):
         if not password:
             raise AssertionError('Password not provided')
@@ -50,7 +51,7 @@ class Poet(db.Model):
         if not username:
             raise AssertionError('No username provided')
 
-        if User.query.filter(User.username == username).first():
+        if Poet.query.filter(Poet.username == username).first():
             raise AssertionError('Username is already in use')
 
         if len(username) < 5 or len(username) > 20:
@@ -66,7 +67,7 @@ class Poet(db.Model):
         if not re.match("[^@]+@[^@]+\.[^@]+", email):
             raise AssertionError('Provided email is not an email address')
 
-        return address
+        return email
          
     @staticmethod
     def participated_in_corpuses(self):
@@ -78,25 +79,33 @@ class Poet(db.Model):
 class Corpus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
-    poems = db.relationship('Poem', backref='corpus', lazy=True)
 
     def __init__(self, name):
         self.title = title
 
-     def save(self):
+    def save(self):
         db.session.add(self)
         db.session.commit()
 
+class Poem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rounds = db.relationship('Round', backref='poem', lazy=True)
+    # current_round = db.relationship('CurrentRound', backref='poem', lazy=True)
+    timed = db.Column(db.Boolean, unique=False, default=False)
+    
 # each round must end w/ 2 lines
 # a first round starts off w/ 0 lines
 # all other rounds have prev rounds and start off w/ an exposed line, the secondline of prev round
 class Round(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    poem_id = db.Column(db.Integer, db.ForeignKey('poem.id'), nullable=False)
     number = db.Column(db.Integer)
     current = db.Column(db.Boolean, default=True)
     length = db.Column(db.Integer) # if corpus is timed, then length is prescriptive
-    first_line = db.relationship('Line', backref='round', lazy=True) #maybe alias as exposed_line for number > 0
-    second_line = db.relationship('Line', backref='round', lazy=True)
+    first_line_id = db.Column(db.Integer, db.ForeignKey("line.id"))
+    second_line_id = db.Column(db.Integer, db.ForeignKey("line.id"))
+    first_line = db.relationship('Line', foreign_keys=[first_line_id], backref='roundAppearingAsPrompt', lazy=True) #maybe alias as exposed_line for number > 0
+    second_line = db.relationship('Line', foreign_keys=[second_line_id], backref='roundWrittenIn', lazy=True)
     start_time = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
     completed_time = db.Column(db.DateTime, nullable=True)
 
@@ -108,6 +117,7 @@ class Round(db.Model):
 
 class Line(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    poet_id = db.Column(db.Integer, db.ForeignKey('poet.id'), nullable=False)   
     content = db.Column(db.Text, nullable=False)
     time_stamp = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
 
@@ -118,11 +128,4 @@ class Line(db.Model):
     def validate_content(self, content):
         if not content:
             raise AssertionError('Write something!')
-
-    
-class Poem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    rounds = db.relationship('Round', backref='poem')
-    # current_round = db.relationship('CurrentRound', backref='poem', lazy=True)
-    timed = db.Column(db.Boolean, unique=False, default=False)
 

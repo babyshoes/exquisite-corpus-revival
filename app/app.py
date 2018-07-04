@@ -37,7 +37,7 @@ def create_app(config_name):
 
     @app.route('/corpus/', methods=['POST', 'GET'])
     def corpuses():
-        data = {k,v for k,v in request.data.iteritems() if k!='poets'}
+        data = {k:v for k,v in request.data.iteritems() if k!='poets'}
 
         if request.method == "POST":
             corpus = Corpus(**data.to_dict())

@@ -1,3 +1,5 @@
+/app/migrations/
+
 .DS_Store
 .env
 .flaskenv

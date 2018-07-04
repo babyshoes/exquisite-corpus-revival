@@ -12,8 +12,7 @@ def create_app(config_name):
 
     @app.route('/poet/', methods=['POST', 'GET'])
     def poets():
-        username = str(request.data.get('username', ''))
-        
+        username = str(request.data.get('username', ''))     
         data = request.data
          
         if request.method == "POST":
@@ -34,6 +33,27 @@ def create_app(config_name):
             response = jsonify(poet_info)
             response.status_code = 200
             # import pdb; pdb.set_trace()
+            return response
+
+    @app.route('/corpus/', methods=['POST', 'GET'])
+    def corpuses():
+        data = {k,v for k,v in request.data.iteritems() if k!='poets'}
+
+        if request.method == "POST":
+            corpus = Corpus(**data.to_dict())
+            db.session.add([corpus])
+
+            poet_ids = request.data['poets']
+            for poet_id in poet_ids:
+                statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id)
+                db.session.execute(statement)
+            
+            db.session.commit()
+            response = jsonify({
+                'id': corpus.id,
+                'title': corpus.title
+            })
+            response.status_code = 201
             return response
 
     return app

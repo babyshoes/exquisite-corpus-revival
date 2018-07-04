@@ -6,7 +6,7 @@ import re
 
 db = SQLAlchemy()
 
-corpuses = db.Table('corpuses',
+corpus_poet = db.Table('corpus_poet',
     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
     db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True)
 )
@@ -22,7 +22,6 @@ class Poet(db.Model):
     lines = db.relationship('Line', backref='poet', lazy=True)
 
     def __init__(self, name, username, email, password):
-        # import pdb;pdb.set_trace()
         self.name = name
         self.username = username
         self.email = email
@@ -85,8 +84,9 @@ class Poet(db.Model):
 class Corpus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
+    poems = db.relationship('Poem', backref='corpus')
 
-    def __init__(self, name):
+    def __init__(self, title):
         self.title = title
 
     def save(self):
@@ -95,6 +95,7 @@ class Corpus(db.Model):
 
 class Poem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'), nullable=False)
     rounds = db.relationship('Round', backref='poem', lazy=True)
     # current_round = db.relationship('CurrentRound', backref='poem', lazy=True)
     timed = db.Column(db.Boolean, unique=False, default=False)

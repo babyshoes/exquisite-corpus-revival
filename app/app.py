@@ -12,25 +12,28 @@ def create_app(config_name):
 
     @app.route('/poet/', methods=['POST', 'GET'])
     def poets():
-        name = str(request.data.get('name', ''))
+        username = str(request.data.get('username', ''))
+        
         data = request.data
+         
         if request.method == "POST":
-            
-            if name:
+            if username:
                 poet = Poet(**data.to_dict())
                 poet.save()
                 response = jsonify({
                     'name': poet.name,
                     'username': poet.username,
-                    'email': poet.email
+                    'email': poet.email,
                 })
                 response.status_code = 201
                 return response
         else:
             # GET
-            poet_info = Poet.query.filter(Poet.name==name)
+            poet_info = Poet.query.filter_by(username=username).first().lookup()
+            # 
             response = jsonify(poet_info)
             response.status_code = 200
+            # import pdb; pdb.set_trace()
             return response
 
     return app

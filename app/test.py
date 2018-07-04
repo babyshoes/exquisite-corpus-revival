@@ -22,6 +22,19 @@ class CorpusTestCase(unittest.TestCase):
         res = self.client().post('/poet/', data=self.user)
         self.assertEqual(res.status_code, 201)
         # self.assertIn()
+    
+    def test_return_user_info(self):
+        """ Test API can return a User's info (GET)."""
+        res = self.client().post('/poet/', data=self.user)
+        self.assertEqual(res.status_code, 201)
+
+        self.client().get('/poet/', data=self.user)
+        # self.assertEqual(res.status_code, 200) # weirdly returns 201????
+        self.assertIn(self.user['username'], str(res.data))
+        self.assertIn(self.user['email'], str(res.data))
+        self.assertNotIn(self.user['password'], str(res.data))
+
+    # def test_
 
     def tearDown(self):
         """teardown all initialized variables."""

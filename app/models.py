@@ -13,6 +13,7 @@ corpuses = db.Table('corpuses',
 
 class Poet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(128))
@@ -45,6 +46,11 @@ class Poet(db.Model):
 
     def check_password(self, password):
       return check_password_hash(self.password_hash, password)
+    
+    def lookup(self):
+        atts = ['name', 'username', 'email']
+        return {val: self.__dict__[val] for val in atts}
+
 
     @validates('username')
     def validate_username(self, key, username):

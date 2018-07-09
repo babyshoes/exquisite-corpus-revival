@@ -15,4 +15,6 @@ ENV POSTGRES_PASSWORD corpse
 ENV POSTGRES_DB exq_db
 ENV FLASK_APP app.py
 
+# does this make migrations folder out of the box??? hmmm
+# TO DO: automate migration making and applying
 CMD python -m flask run --host=0.0.0.0

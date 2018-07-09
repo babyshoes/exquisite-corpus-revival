@@ -27,9 +27,10 @@ class CorpusTestCase(unittest.TestCase):
         return self.client().post('/round/')
 
     def create_corpus(self, poet_ids):
-        corpus_data = self.corpus + {'poet_ids': poet_ids}
+        corpus_data = {'poet_ids': poet_ids, **self.corpus}
         corpus_data['poet_ids'] = poet_ids
         return self.client().post('/corpus/', data=self.corpus)
+    
 
     def test_user_creation(self):
         """ Test API can create a User (POST)."""
@@ -47,12 +48,13 @@ class CorpusTestCase(unittest.TestCase):
         self.assertIn(self.user['email'], str(res.data))
         self.assertNotIn(self.user['password'], str(res.data))
 
+    # create corp
     def test_corpus_creation(self):
+        """ Test API can create a corpus even before it's playable"""
         user_res = self.create_user()
-
-        res = self.create_corpus()
+        poet_ids = []
+        res = self.create_corpus(poet_ids)
         self.assertEqual(res.status_code, 201)
-    
     
     def test_round_creation(self):
         res = self.create_round()

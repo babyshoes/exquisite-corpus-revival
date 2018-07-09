@@ -1,11 +1,10 @@
 from flask import Flask, render_template, request, jsonify, abort
-from flask_api import FlaskAPI
-from config import Config
-from flask_migrate import Migrate
-from models import *
+
+from .config import Config
+from .extensions import *
+from .models import *
 
 def create_app(config_name):
-    # app = Flask(__name__)
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(Config)
     db.init_app(app)
@@ -58,9 +57,6 @@ def create_app(config_name):
 
     return app
 
-# app = Flask(__name__)
-# app.config.from_object(Config)
-# db.init_app(app)
 app = create_app(Config)
 migrate = Migrate(app, db)
 

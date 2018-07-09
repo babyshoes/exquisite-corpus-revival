@@ -1,10 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
-
-db = SQLAlchemy()
+from .extensions import db
 
 corpus_poet = db.Table('corpus_poet',
     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),

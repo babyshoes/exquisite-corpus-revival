@@ -1,11 +1,11 @@
 import unittest
 import os
 import json
-from app import create_app, db
+from app import app
 
 class CorpusTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = create_app(config_name="testing")
+        self.app = app.create_app(config_name="testing")
         self.client = self.app.test_client
         self.user = {
             'name': 'Diane',
@@ -18,7 +18,7 @@ class CorpusTestCase(unittest.TestCase):
         }
 
         with self.app.app_context():
-            db.create_all()
+            app.db.create_all()
 
     def create_user(self):
         return self.client().post('/poet/', data=self.user)
@@ -70,8 +70,8 @@ class CorpusTestCase(unittest.TestCase):
         """teardown all initialized variables."""
         with self.app.app_context():
             # drop all tables
-            db.session.remove()
-            db.drop_all()
+            app.db.session.remove()
+            app.db.drop_all()
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

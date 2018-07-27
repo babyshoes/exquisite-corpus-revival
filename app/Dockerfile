@@ -10,6 +10,7 @@ RUN apk update && \
  python3 -m pip install -r requirements.txt --no-cache-dir && \
  apk --purge del .build-deps
 
+ENV PYTHONPATH "/home/app"
 ENV POSTGRES_USER exquisite
 ENV POSTGRES_PASSWORD corpse
 ENV POSTGRES_DB exq_db

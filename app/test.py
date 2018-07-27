@@ -1,7 +1,9 @@
 import unittest
 import os
 import json
+import re
 from app import app, db
+from services import CorpusAnimator
 
 class CorpusTestCase(unittest.TestCase):
     def setUp(self):
@@ -30,8 +32,11 @@ class CorpusTestCase(unittest.TestCase):
     def create_corpus(self, poet_ids):
         corpus_data = {'poet_ids': poet_ids, **self.corpus}
         corpus_data['poet_ids'] = poet_ids
-        return self.client().post('/corpus/', data=self.corpus)
+        return self.client().post('/corpus/', data=corpus_data)
     
+    def unpack_json(self, json):
+        output = re.findall(r"\{([\w\W]*)\}", str(json))[0]
+        return dict([val.split(':') for val in output.replace('"', '').split(',')])
 
     def test_user_creation(self):
         """ Test API can create a User (POST)."""
@@ -52,11 +57,12 @@ class CorpusTestCase(unittest.TestCase):
     # create corp
     def test_corpus_creation(self):
         """ Test API can create a corpus even before it's playable"""
-        user_res = self.create_user()
-        user_info = self.client().get('/poet/', data=self.user)
-        poet_ids = []
-        import pdb;pdb.set_trace()
+        self.create_user()
+        user_info = self.client().get('/poet/', data=self.user).data
+        user_info = self.unpack_json(user_info)
+        poet_ids = [int(user_info['id'])]
         res = self.create_corpus(poet_ids)
+        # import pdb;pdb.set_trace()
         self.assertEqual(res.status_code, 201)
     
     def test_round_creation(self):

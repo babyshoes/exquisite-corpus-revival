@@ -34,14 +34,13 @@ def create_app(config_name):
 
     @app.route('/corpus/', methods=['POST', 'GET'])
     def corpuses():
-        data = {k:v for k,v in request.data.iteritems() if k!='poets'}
+        data = {k:v for k,v in request.data.items() if k!='poet_ids'}
 
-        import pdb;pdb.set_trace()
         if request.method == "POST":
-            corpus = Corpus(**data.to_dict())
-            db.session.add([corpus])
+            corpus = Corpus(**data)
+            corpus.save()
 
-            poet_ids = request.data['poets']
+            poet_ids = request.data['poet_ids']
             if poet_ids:
                 for poet_id in poet_ids:
                     statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id)

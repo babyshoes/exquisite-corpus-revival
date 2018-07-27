@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, jsonify, abort
 
-from .config import Config
-from .extensions import *
-from .models import *
+from config import Config
+from extensions import *
+from models import *
 
 def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)

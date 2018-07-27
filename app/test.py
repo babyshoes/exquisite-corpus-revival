@@ -1,11 +1,12 @@
 import unittest
 import os
 import json
-from app import app
+from app import app, db
 
 class CorpusTestCase(unittest.TestCase):
     def setUp(self):
-        self.app = app.create_app(config_name="testing")
+        # self.app = app.create_app(config_name="testing")
+        self.app = app
         self.client = self.app.test_client
         self.user = {
             'name': 'Diane',
@@ -18,7 +19,7 @@ class CorpusTestCase(unittest.TestCase):
         }
 
         with self.app.app_context():
-            app.db.create_all()
+            db.create_all()
 
     def create_user(self):
         return self.client().post('/poet/', data=self.user)
@@ -52,7 +53,9 @@ class CorpusTestCase(unittest.TestCase):
     def test_corpus_creation(self):
         """ Test API can create a corpus even before it's playable"""
         user_res = self.create_user()
+        user_info = self.client().get('/poet/', data=self.user)
         poet_ids = []
+        import pdb;pdb.set_trace()
         res = self.create_corpus(poet_ids)
         self.assertEqual(res.status_code, 201)
     
@@ -70,8 +73,8 @@ class CorpusTestCase(unittest.TestCase):
         """teardown all initialized variables."""
         with self.app.app_context():
             # drop all tables
-            app.db.session.remove()
-            app.db.drop_all()
+            db.session.remove()
+            db.drop_all()
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

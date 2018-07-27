@@ -2,7 +2,7 @@ from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
-from .extensions import db
+from extensions import db
 
 corpus_poet = db.Table('corpus_poet',
     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
@@ -82,6 +82,7 @@ class Poet(db.Model):
 class Corpus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
+    started = db.Column(db.Boolean, default=False)
     poems = db.relationship('Poem', backref='corpus')
 
     def __init__(self, title):

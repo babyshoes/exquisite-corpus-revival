@@ -34,29 +34,35 @@ def create_app(config_name):
 
     @app.route('/corpus/', methods=['POST', 'GET'])
     def corpuses():
-        if request.method == "POST":
-            data = {k:v for k,v in request.data.items() if k!='poet_id'}
-            corpus = Corpus(**data)
-            corpus.save()
+        data = {k:v for k,v in request.data.items() if k!='poet_id'}
+        poet_id = request.data['poet_id']
 
-            poet_id = request.data['poet_id']
-            statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id, initializer=True)
-            db.session.execute(statement)
-            # if poet_ids:
-            #     for poet_id in poet_ids:
-            #         statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id)
-            #         db.session.execute(statement)
+        if request.method == "POST":
+            corpus = Corpus(**data)
+            poet = Poet.query.filter_by(id=poet_id).first()
+            corpus.poets.append(poet)
+            corpus.save()
+            # statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id, initializer=True)
+            # db.session.execute(statement)
             
-            # db.session.commit()
             response = jsonify({
                 'id': corpus.id,
                 'title': corpus.title
             })
             response.status_code = 201
             return response
+        else: # GET
+            # TO DO: separate retrievals for corpuses initialized by poet
+            # vs merely participated
+            corpus_info = Poet.query.filter_by(id=poet_id).first().corpuses[0].lookup()
+            # corpus_info = corpus_poet.query.filter_by(poet_id=poet_id)
+            response = jsonify(corpus_info)
+            response.status_code = 200
+            return response
+
 
     @app.route('/corpus_poet/', methods=['POST', 'GET'])
-    def corpus_poet():
+    def post_corpus_poet():
         if request.method == "POST":
             data = request.data.items()
             statement = corpus_poet.insert().values(corpus_id=data['corpus_id'], 

@@ -66,8 +66,8 @@ class CorpusTestCase(unittest.TestCase):
         """ Test API can return a User's info (GET)."""
         res = self.create_user(self.user)
 
-        self.client().get('/poet/', data=self.user)
-        self.assertEqual(res.status_code, 201) # weirdly returns 201????
+        poet_data = self.client().get('/poet/', data=self.user)
+        self.assertEqual(res.status_code, 201)
         self.assertIn(self.user['username'], str(res.data))
         self.assertIn(self.user['email'], str(res.data))
         self.assertNotIn(self.user['password'], str(res.data))

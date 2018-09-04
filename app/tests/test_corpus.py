@@ -23,12 +23,12 @@ class CorpusTestCase(unittest.TestCase):
                 'email': 'imabutt@lee.edu',
                 'password': 'Le3L3eLe3'
             },
-            {
-                'name': 'Steph',
-                'username': 'steviewonder',
-                'email': 'steph@stef.com',
-                'password': 'steponmefungus'
-            }
+            # {
+            #     'name': 'Steph',
+            #     'username': 'steviewonder',
+            #     'email': 'steph@stef.com',
+            #     'password': 'step0nmeFungus'
+            # }
         ]
 
         self.corpus = {
@@ -42,7 +42,9 @@ class CorpusTestCase(unittest.TestCase):
                 self.create_user(user)
             # import pdb;pdb.set_trace()
             self.poet_ids = [self.get_user_id(user) for user in self.users]
-            self.create_corpus()
+
+            self.starter_poet = self.poet_ids[0]
+            self.create_corpus(self.starter_poet)
 
     def create_user(self, user_data):
         return self.client().post('/poet/', data=user_data)
@@ -59,6 +61,13 @@ class CorpusTestCase(unittest.TestCase):
         corpus_data = {'poet_id': poet_id, **self.corpus}
         return self.client().post('/corpus/', data=corpus_data)
     
+    def get_corpus_id(self, poet_id):
+        data = {'poet_id': poet_id}
+        corpus_info = self.client().get('/corpus/', data=data).data
+
+        corpus_info = self.unpack_json(corpus_info)
+        return int(corpus_info['id'])
+
     def unpack_json(self, json):
         output = re.findall(r"\{([\w\W]*)\}", str(json))[0]
         return dict([val.split(':') for val in output.replace('"', '').split(',')])
@@ -70,17 +79,25 @@ class CorpusTestCase(unittest.TestCase):
         res = self.create_corpus(poet_id)
         self.assertEqual(res.status_code, 201)
 
+    def test_retrieve_corpus_id(self):
+        """ Test API can retrieve corpus ID with initializer poet ID"""
+        data = {'poet_id': self.starter_poet}
+        res = self.client().get('/corpus/', data=data)
+
+        corpus_info = self.unpack_json(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+
     # def add_poets_to_corpus(self):
     #     """ Test API can add poets to already initialized corpus"""
-    #     # create corpus
-
-    #     # create new users, get ids
-
     #     # add ids to corpus
     #     user_info = self.client().get('/poet/', data=self.user).data
     #     user_info = self.unpack_json(user_info)
     #     poet_id = int(user_info['id'])
     #     res = self.create_corpus(poet_id)
+
+        # get corpus_id
+
 
     # def start_corpus(self):
     #    """ Test corpus is started upon >=3 poets join and initializer consent"""

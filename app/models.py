@@ -85,6 +85,8 @@ class Corpus(db.Model):
     title = db.Column(db.String(120))
     started = db.Column(db.Boolean, default=False)
     poems = db.relationship('Poem', backref='corpus')
+    # poets = db.relationship('Poet', secondary=corpus_poet, lazy='subquery',
+    # backref=db.backref('corpuses', lazy=True))
 
     def __init__(self, title):
         self.title = title
@@ -92,6 +94,10 @@ class Corpus(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+    
+    def lookup(self):
+        atts = ['title', 'started', 'id']
+        return {val: self.__dict__[val] for val in atts}
 
 class Poem(db.Model):
     id = db.Column(db.Integer, primary_key=True)

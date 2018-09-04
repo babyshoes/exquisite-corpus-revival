@@ -6,7 +6,8 @@ from extensions import db
 
 corpus_poet = db.Table('corpus_poet',
     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
-    db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True)
+    db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True),
+    db.Column('initializer', db.Boolean, default=False)
 )
 
 class Poet(db.Model):

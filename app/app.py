@@ -34,19 +34,20 @@ def create_app(config_name):
 
     @app.route('/corpus/', methods=['POST', 'GET'])
     def corpuses():
-        data = {k:v for k,v in request.data.items() if k!='poet_ids'}
-
         if request.method == "POST":
+            data = {k:v for k,v in request.data.items() if k!='poet_id'}
             corpus = Corpus(**data)
             corpus.save()
 
-            poet_ids = request.data['poet_ids']
-            if poet_ids:
-                for poet_id in poet_ids:
-                    statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id)
-                    db.session.execute(statement)
+            poet_id = request.data['poet_id']
+            statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id, initializer=True)
+            db.session.execute(statement)
+            # if poet_ids:
+            #     for poet_id in poet_ids:
+            #         statement = corpus_poet.insert().values(corpus_id=corpus.id, poet_id=poet_id)
+            #         db.session.execute(statement)
             
-            db.session.commit()
+            # db.session.commit()
             response = jsonify({
                 'id': corpus.id,
                 'title': corpus.title
@@ -54,6 +55,14 @@ def create_app(config_name):
             response.status_code = 201
             return response
 
+    @app.route('/corpus_poet/', methods=['POST', 'GET'])
+    def corpus_poet():
+        if request.method == "POST":
+            data = request.data.items()
+            statement = corpus_poet.insert().values(corpus_id=data['corpus_id'], 
+                                                    poet_id=data['poet_id'])
+            db.session.execute(statement)
+    
     return app
 
 app = create_app(Config)

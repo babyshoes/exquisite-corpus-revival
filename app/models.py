@@ -4,11 +4,28 @@ from datetime import datetime
 import re
 from extensions import db
 
-corpus_poet = db.Table('corpus_poet',
-    db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
-    db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True),
-    db.Column('initializer', db.Boolean, default=False)
-)
+# corpus_poet = db.Table('corpus_poet',
+#     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
+#     db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True),
+#     db.Column('initializer', db.Boolean, default=False)
+# )
+
+class CorpusPoet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    poet_id = db.Column(db.Integer, db.ForeignKey('poet.id'))
+    corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'))
+    initializer = db.Column(db.Boolean)
+    # corpus = db.relationship("Corpus", back_populates="poets")
+    # poets = db.relationship("Poet", back_populates="corpuses")
+
+    def __init__(self, poet_id, corpus_id, initializer):
+        self.poet_id = int(poet_id)
+        self.corpus_id = int(corpus_id)
+        self.initializer = int(initializer)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
 class Poet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -16,8 +33,9 @@ class Poet(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(128))
-    corpuses = db.relationship('Corpus', secondary=corpus_poet, lazy='subquery',
-        backref=db.backref('poets', lazy=True))
+    # corpuses = db.relationship("CorpusPoet", back_populates="poets")
+    # corpuses = db.relationship('Corpus', secondary=corpus_poet, lazy='subquery',
+    #     backref=db.backref('poets', lazy=True))
     lines = db.relationship('Line', backref='poet', lazy=True)
 
     def __init__(self, name, username, email, password):
@@ -85,6 +103,7 @@ class Corpus(db.Model):
     title = db.Column(db.String(120))
     started = db.Column(db.Boolean, default=False)
     poems = db.relationship('Poem', backref='corpus')
+    # poets = db.relationship("CorpusPoet", back_populates="corpus")
     # poets = db.relationship('Poet', secondary=corpus_poet, lazy='subquery',
     # backref=db.backref('corpuses', lazy=True))
 

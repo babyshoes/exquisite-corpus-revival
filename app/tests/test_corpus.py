@@ -38,13 +38,14 @@ class CorpusTestCase(unittest.TestCase):
         with self.app.app_context():
             db.create_all()
             for user in self.users:
-                # import pdb;pdb.set_trace()
                 self.create_user(user)
-            # import pdb;pdb.set_trace()
             self.poet_ids = [self.get_user_id(user) for user in self.users]
 
             self.starter_poet = self.poet_ids[0]
-            self.create_corpus(self.starter_poet)
+            corpus_response = self.create_corpus().data
+            self.corpus_id = int(self.unpack_json(corpus_response)['id'])
+            # import pdb;pdb.set_trace()
+            self.join_corpus_poet(self.starter_poet, self.corpus_id)
 
     def create_user(self, user_data):
         return self.client().post('/poet/', data=user_data)
@@ -57,9 +58,13 @@ class CorpusTestCase(unittest.TestCase):
     def create_round(self):
         return self.client().post('/round/')
 
-    def create_corpus(self, poet_id):
-        corpus_data = {'poet_id': poet_id, **self.corpus}
+    def create_corpus(self):
+        corpus_data = {**self.corpus}
         return self.client().post('/corpus/', data=corpus_data)
+    
+    def join_corpus_poet(self, poet_id, corpus_id, initializer=0):
+        assc_data = {'poet_id': poet_id, 'corpus_id': corpus_id, 'initializer': initializer}
+        return self.client().post('/corpus_poet/', data=assc_data)
     
     def get_corpus_id(self, poet_id):
         data = {'poet_id': poet_id}
@@ -75,29 +80,29 @@ class CorpusTestCase(unittest.TestCase):
     # create corp
     def test_corpus_creation(self):
         """ Test API can create a corpus even before it's playable"""
-        poet_id = self.poet_ids[0]
-        res = self.create_corpus(poet_id)
+        res = self.create_corpus()
         self.assertEqual(res.status_code, 201)
 
     def test_retrieve_corpus_id(self):
-        """ Test API can retrieve corpus ID with initializer poet ID"""
-        data = {'poet_id': self.starter_poet}
+        """ Test API can retrieve corpus with ID"""
+        data = {'id': self.corpus_id}
         res = self.client().get('/corpus/', data=data)
-
+        # import pdb;pdb.set_trace()
         corpus_info = self.unpack_json(res.data)
         
         self.assertEqual(res.status_code, 200)
 
+    # def add_starter_poet_to_corpus(self):
+    #     """ Test API can add join initializing poet w/ their new corpus"""
+    #     # add ids to corpus
+    #     res = self.join_corpus_poet(self.starter_poet, self.corpus_id, True)
+    #     self.assertEqual(res.status_code, 201)
+
     # def add_poets_to_corpus(self):
     #     """ Test API can add poets to already initialized corpus"""
     #     # add ids to corpus
-    #     user_info = self.client().get('/poet/', data=self.user).data
-    #     user_info = self.unpack_json(user_info)
-    #     poet_id = int(user_info['id'])
-    #     res = self.create_corpus(poet_id)
-
-        # get corpus_id
-
+    #     res = self.join_corpus_poet(self.starter_poet, self.corpus_id, True)
+    #     self.assertEqual(res.status_code, 201)
 
     # def start_corpus(self):
     #    """ Test corpus is started upon >=3 poets join and initializer consent"""

@@ -2,21 +2,13 @@ from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import re
-from extensions import db
-
-# corpus_poet = db.Table('corpus_poet',
-#     db.Column('corpus_id', db.Integer, db.ForeignKey('corpus.id'), primary_key=True),
-#     db.Column('poet_id', db.Integer, db.ForeignKey('poet.id'), primary_key=True),
-#     db.Column('initializer', db.Boolean, default=False)
-# )
+from extensions import db, ma
 
 class CorpusPoet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     poet_id = db.Column(db.Integer, db.ForeignKey('poet.id'))
     corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'))
     initializer = db.Column(db.Boolean)
-    # corpus = db.relationship("Corpus", back_populates="poets")
-    # poets = db.relationship("Poet", back_populates="corpuses")
 
     def __init__(self, poet_id, corpus_id, initializer):
         self.poet_id = int(poet_id)
@@ -26,6 +18,10 @@ class CorpusPoet(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
+
+class CorpusPoetSchema(ma.ModelSchema):
+    class Meta:
+        model = CorpusPoet
 
 class Poet(db.Model):
     id = db.Column(db.Integer, primary_key=True)

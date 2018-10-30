@@ -4,3 +4,5 @@ Flask-Migrate
 psycopg2
 sqlalchemy
 flask-api
+flask-marshmallow==0.9.0
+marshmallow-sqlalchemy==0.14.1

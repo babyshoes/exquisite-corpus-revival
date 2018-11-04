@@ -4,19 +4,6 @@ from datetime import datetime
 import re
 from extensions import db, ma
 
-class CorpusPoet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    poet_id = db.Column(db.Integer, db.ForeignKey('poet.id'), nullable=False)
-    corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'), nullable=False)
-    initializer = db.Column(db.Boolean)
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
-class CorpusPoetSchema(ma.ModelSchema):
-    class Meta:
-        model = CorpusPoet
 
 class Line(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +17,7 @@ class Line(db.Model):
     @validates('content')
     def validate_content(self, content):
         if not content:
-            raise AssertionError('Write something!')
+            raise AssertionError('Write something!')      
 
 class Poet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,9 +25,7 @@ class Poet(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), nullable=False)
     password_hash = db.Column(db.String(128))
-    corpus_joins = db.relationship("CorpusPoet", backref="poet")
-    # corpuses = db.relationship('Corpus', secondary=corpus_poet, lazy='subquery',
-    #     backref=db.backref('poets', lazy=True))
+    corpora = db.relationship("CorpusPoet", backref="poet")
     lines = db.relationship('Line', backref='poet', lazy=True)
     
     def save(self):
@@ -65,14 +50,7 @@ class Poet(db.Model):
     def lookup(self):
         atts = ['name', 'username', 'email', 'id']
         return {val: self.__dict__[val] for val in atts}
-
-    def corpuses(self):
-        corpus_ids = [join.corpus_id for join in self.corpus_joins]
-        return Corpus.filter_by(Corpus.isin(corpus_ids)).all()
     
-    def initialized_corpuses(self):
-        corpus_ids = [join.corpus_id for join in self.corpus_joins if join.initialized]
-        return Corpus.filter_by(Corpus.isin(corpus_ids)).all()
     
     @validates('username')
     def validate_username(self, key, username):
@@ -98,10 +76,10 @@ class Poet(db.Model):
         return email
          
     @staticmethod
-    def participated_in_corpuses(self):
-        return self.corpuses
+    def participated_in_corpora(self):
+        return self.corpora
     
-    def current_corpuses(self):
+    def current_corpora(self):
         pass
 
 class PoetSchema(ma.ModelSchema):
@@ -130,7 +108,6 @@ class Round(db.Model):
     def complete(self):
         self.current = False
 
-
 class Poem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'), nullable=False)
@@ -142,8 +119,7 @@ class Corpus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     started = db.Column(db.Boolean, default=False)
-    poems = db.relationship('Poem', backref='corpus')
-    poet_joins = db.relationship("CorpusPoet", backref="corpus")
+    poems = db.relationship('CorpusPoet', backref='corpus')
 
     def __init__(self, title):
         self.title = title
@@ -159,4 +135,21 @@ class Corpus(db.Model):
 class CorpusSchema(ma.ModelSchema):
     class Meta:
         model = Corpus
+
+class CorpusPoet(db.Model):
+    __tablename__ = 'corpus_poet'
+    corpus_id = db.Column(db.Integer, db.ForeignKey('corpus.id'), primary_key=True)
+    poet_id = db.Column(db.Integer, db.ForeignKey('poet.id'), primary_key=True)
+    initializer = db.Column(db.Boolean)
+    poet = db.relationship("Poet", backref="corpora")
+    corpus = db.relationship("Corpus", backref="poets")
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+class CorpusPoetSchema(ma.ModelSchema):
+    class Meta:
+        model = CorpusPoet
+
 

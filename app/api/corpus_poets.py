@@ -19,8 +19,8 @@ def corpus_poet():
         return response
 
 @corpus_poets_blueprint.route('/corpus_poet/<poet_id>', methods=['GET'])
-def find_corpuses_by_poet_id(poet_id):
+def find_corpora_by_poet_id(poet_id):
     corpus_schema = CorpusSchema()
-    corpuses = Poet.get(poet_id).corpuses()
-    return corpus_schema.jsonify(corpuses, many=True)
+    corpora = Poet.get(poet_id).corpora()
+    return corpus_schema.jsonify(corpora, many=True)
 

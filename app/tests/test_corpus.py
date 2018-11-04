@@ -82,7 +82,7 @@ class CorpusTestCase(unittest.TestCase):
         res = self.client().get('/corpus/' + str(self.corpus_id))
         self.assertEqual(res.status_code, 200)
     
-    def get_poets_corpuses(self):
+    def get_poets_corpora(self):
         res = self.client().get('/corpus/' + str(self.starter_poet_id))
 
         self.assertEqual(res.status_code, 200)

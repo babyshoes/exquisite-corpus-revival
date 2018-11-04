@@ -8,11 +8,11 @@ def create_app():
     db.init_app(app)
     ma.init_app(app)
     from api.poets import poets_blueprint
-    from api.corpuses import corpuses_blueprint
+    from api.corpora import corpora_blueprint
     from api.corpus_poets import corpus_poets_blueprint
 
     app.register_blueprint(poets_blueprint)
-    app.register_blueprint(corpuses_blueprint)
+    app.register_blueprint(corpora_blueprint)
     app.register_blueprint(corpus_poets_blueprint)
     
     return app

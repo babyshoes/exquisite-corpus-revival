@@ -3,7 +3,7 @@ import os
 import json
 import re
 from app import app, db
-from services import CorpusAnimator
+from models import PoetSchema, Poet
 
 class CorpusTestCase(unittest.TestCase):
     def setUp(self):
@@ -37,23 +37,18 @@ class CorpusTestCase(unittest.TestCase):
 
         with self.app.app_context():
             db.create_all()
-            for user in self.users:
-                self.create_user(user)
-            self.poet_ids = [self.get_user_id(user) for user in self.users]
-
-            self.starter_poet = self.poet_ids[0]
-            corpus_response = self.create_corpus().data
-            self.corpus_id = int(self.unpack_json(corpus_response)['id'])
-            # import pdb;pdb.set_trace()
-            self.join_corpus_poet(self.starter_poet, self.corpus_id)
+            poets = [ self.create_user(u).json for u in self.users ]
+            self.starter_poet_id = poets[0]['id']
+            self.corpus_id = self.create_corpus().json['id']
+            self.join_corpus_poet(self.starter_poet_id, self.corpus_id)
 
     def create_user(self, user_data):
         return self.client().post('/poet/', data=user_data)
 
-    def get_user_id(self, user_data):
-        user_info = self.client().get('/poet/', data=user_data).data
-        user_info = self.unpack_json(user_info)
-        return int(user_info['id'])
+    # def get_user_id(self, user_data):
+    #     user_info = self.client().get('/poet/', data=user_data).data
+    #     user_info = self.unpack_json(user_info)
+    #     return int(user_info['id'])
 
     def create_round(self):
         return self.client().post('/round/')
@@ -68,10 +63,9 @@ class CorpusTestCase(unittest.TestCase):
     
     def get_corpus_id(self, poet_id):
         data = {'poet_id': poet_id}
-        corpus_info = self.client().get('/corpus/', data=data).data
+        corpus_info = self.client().get('/corpus/' + str(poet_id)).data
 
-        corpus_info = self.unpack_json(corpus_info)
-        return int(corpus_info['id'])
+        return corpus_info
 
     def unpack_json(self, json):
         output = re.findall(r"\{([\w\W]*)\}", str(json))[0]
@@ -81,15 +75,16 @@ class CorpusTestCase(unittest.TestCase):
     def test_corpus_creation(self):
         """ Test API can create a corpus even before it's playable"""
         res = self.create_corpus()
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.status_code, 200)
 
     def test_retrieve_corpus_id(self):
         """ Test API can retrieve corpus with ID"""
-        data = {'id': self.corpus_id}
-        res = self.client().get('/corpus/', data=data)
-        # import pdb;pdb.set_trace()
-        corpus_info = self.unpack_json(res.data)
-        
+        res = self.client().get('/corpus/' + str(self.corpus_id))
+        self.assertEqual(res.status_code, 200)
+    
+    def get_poets_corpuses(self):
+        res = self.client().get('/corpus/' + str(self.starter_poet_id))
+
         self.assertEqual(res.status_code, 200)
 
     # def add_starter_poet_to_corpus(self):

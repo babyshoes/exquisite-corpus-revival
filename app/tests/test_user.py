@@ -59,7 +59,7 @@ class CorpusTestCase(unittest.TestCase):
         """ Test API can create a User (POST)."""
         # import pdb;pdb.set_trace()
         res = self.create_user(self.user)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.status_code, 200)
         # self.assertIn()
     
     def test_return_user_info(self):
@@ -67,7 +67,7 @@ class CorpusTestCase(unittest.TestCase):
         res = self.create_user(self.user)
 
         poet_data = self.client().get('/poet/', data=self.user)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.status_code, 200)
         self.assertIn(self.user['username'], str(res.data))
         self.assertIn(self.user['email'], str(res.data))
         self.assertNotIn(self.user['password'], str(res.data))
